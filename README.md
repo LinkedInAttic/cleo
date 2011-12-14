@@ -27,7 +27,7 @@ version: 1.2.1
 
 ### Code Examples:
 
-https://github.com/jingwei/cleo/tree/master/src/examples
+https://github.com/linkedin/cleo/tree/master/src/examples
 
 ### Eclipse:
 
