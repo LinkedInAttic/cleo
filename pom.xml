@@ -1,0 +1,237 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>6</version>
+  </parent>
+
+  <groupId>com.sna-projects.cleo</groupId>
+  <artifactId>cleo</artifactId>
+  <packaging>bundle</packaging>
+  <version>1.2.1</version>
+
+  <name>cleo</name>
+  <description>Flexible, partial, out-of-order real-time typeahead search</description>
+  <url>http://sna-projects.com/cleo</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git://github.com/jingwei/cleo.git</connection>
+    <developerConnection>scm:git@github.com:jingwei/cleo.git</developerConnection>
+    <url>http://github.com/jingwei/cleo</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>jingwei</id>
+      <name>Jingwei Wu</name>
+      <email>jingwei.wu@gmail.com</email>
+    </developer>
+  </developers>
+
+  <build>
+    <plugins>
+      <!-- Set the compiler to java6 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/tool/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+       	  <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4.3</version>
+        <configuration>
+          <includes>
+            <include>**/Test*.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/Abstract*.java</exclude>
+          </excludes>
+          <forkMode>always</forkMode>
+          <argLine>-server -Xms512m -Xmx4g ${cleo.test.jvm.args}</argLine>
+          <systemProperties>
+            <property>
+              <name>cleo.test.output.dir</name>
+              <value>${cleo.test.output.dir}</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.1.2</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.7</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>2.3.4</version>
+          <extensions>true</extensions>
+          <configuration>
+              <instructions>
+                  <Bundle-SymbolicName>com.sna-projects.cleo</Bundle-SymbolicName>
+              </instructions>
+          </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.sna-projects.krati</groupId>
+      <artifactId>krati</artifactId>
+      <version>0.4.3</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.16</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.5</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <properties>
+    <project.build.sourceEncoding>
+      UTF-8
+    </project.build.sourceEncoding>
+    <project.reporting.outputEncoding>
+      UTF-8
+    </project.reporting.outputEncoding>
+
+    <cleo.test.jvm.args>
+    </cleo.test.jvm.args>
+    <cleo.test.output.dir>
+      target/test-output
+    </cleo.test.output.dir>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>oracleReleases</id>
+      <name>Oracle Released Java Packages</name>
+      <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>sonatype nexus staging repository</name>
+      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>sonatype nexus snapshots repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <profiles>
+    <profile>
+      <id>release-sign-artifacts</id>
+        <activation>
+           <property>
+             <name>performRelease</name>
+             <value>true</value>
+           </property>
+        </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
+
