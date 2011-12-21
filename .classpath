@@ -6,7 +6,7 @@
 	<classpathentry kind="src" path="src/examples/java"/>
 	<classpathentry kind="src" path="src/examples/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="M2_REPO/com/sna-projects/krati/krati/0.4.2.3/krati-0.4.2.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/sna-projects/krati/krati/0.4.3/krati-0.4.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/log4j/log4j/1.2.16/log4j-1.2.16.jar"/>
 	<classpathentry kind="var" path="M2_REPO/junit/junit/4.5/junit-4.5.jar"/>
 	<classpathentry kind="output" path="eclipse-build"/>
