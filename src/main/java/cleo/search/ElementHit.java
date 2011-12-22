@@ -23,8 +23,6 @@ import cleo.search.network.Proximity;
  * 
  * @author jwu
  * @since 02/11, 2011
- * 
- * @param <E> Element
  */
 public final class ElementHit<E extends Element> implements Hit<E>, Cloneable {
   private static final long serialVersionUID = 1L;
@@ -128,7 +126,7 @@ public final class ElementHit<E extends Element> implements Hit<E>, Cloneable {
     if(o == null) return false;
     
     if(o.getClass() == ElementHit.class) {
-      return element == ((ElementHit)o).element;
+      return element == ((ElementHit<E>)o).element;
     }
     
     return false;
