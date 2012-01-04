@@ -23,8 +23,43 @@ package cleo.search.util;
  * @since 02/09, 2011
  */
 public class Strings {
-
+  
+  public static String concatenate(char sep, String... words) {
+    StringBuilder sb = new StringBuilder();
+    
+    for(String s : words) {
+      sb.append(s).append(sep);
+    }
+    
+    int lastIndex = sb.length() - 1;
+    if(lastIndex >= 0 && sb.charAt(lastIndex) == sep) {
+      sb.deleteCharAt(lastIndex);
+    }
+    
+    return sb.toString();
+  }
+  
   public static String concatenate(String... words) {
+    return concatenate(',', words);
+  }
+  
+  public static String toArray(String... words) {
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append('[');
+    for(String s : words) {
+      sb.append(s).append(',');
+    }
+    int lastIndex = sb.length() - 1;
+    if(sb.charAt(lastIndex) == ',') {
+      sb.deleteCharAt(lastIndex);
+    }
+    sb.append(']');
+    
+    return sb.toString();
+  }
+  
+  public static String toSet(String... words) {
     StringBuilder sb = new StringBuilder();
     
     sb.append('{');
