@@ -44,6 +44,9 @@ import cleo.search.util.DaemonThreadFactory;
  * 
  * @author jwu
  * @since 03/02, 2011
+ * 
+ * <p>
+ * 01/09, 2012 - Roll updates in one second <br/>
  */
 class RollingTypeahead<E extends Element> extends AbstractTypeahead<E> {
   public static final int DEFAULT_ROLLING_SIZE = 100;
@@ -84,36 +87,38 @@ class RollingTypeahead<E extends Element> extends AbstractTypeahead<E> {
   }
   
   class RollingDriver implements Runnable {
-    private final long rollingTime = 1000L;
-    private final long maxSleepTime = 500L;
-    private final long minSleepTime =  10L;
+    private final long rollingTime = 1000L; // 1000 Milliseconds
+    private final long minSleepTime = 100L; //  100 Milliseconds
     private volatile boolean active = true;
     private final Object mutex = new Object();
     
     @Override
     public void run() {
+      int rolled = 0;
       while(active) {
+        rolled = 0;
+        
         synchronized(mutex) {
-          if(elementQueue.size() >= rollingSize) {
-            int cnt = 0;
-            List<E> list = new ArrayList<E>(rollingSize);
+          if(elementQueue.size() > 0) {
+            // Collect elements up to the specified rollingSize
             Iterator<FilterEntry<E>> iter = elementQueue.iterator();
+            List<E> list = new ArrayList<E>(rollingSize);
             while(iter.hasNext()) {
               list.add(iter.next().element);
-              if(++cnt == rollingSize) break;
+              if(list.size() >= rollingSize) break;
             }
             
             roll(list, false);
+            rolled = list.size();
           }
         }
         
-        // RollingUpdater sleep
-        long sleepTime = (rollingSize - elementQueue.size()) * rollingTime / rollingSize;
-        sleepTime = Math.max(minSleepTime, sleepTime);
-        sleepTime = Math.min(maxSleepTime, sleepTime);
-        if(sleepTime > minSleepTime) {
+        // Sleep if no elements in the queue
+        if(elementQueue.size() == 0) {
           try {
-            Thread.sleep(maxSleepTime);
+            long sleepTime = (rollingSize - rolled) * rollingTime / rollingSize;
+            sleepTime = Math.max(minSleepTime, sleepTime);
+            Thread.sleep(sleepTime);
           } catch (InterruptedException e) {}
         }
       }
