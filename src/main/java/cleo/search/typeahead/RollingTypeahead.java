@@ -47,6 +47,7 @@ import cleo.search.util.DaemonThreadFactory;
  * 
  * <p>
  * 01/09, 2012 - Roll updates in one second <br/>
+ * 01/17, 2012 - Speed up rolling <br/>
  */
 class RollingTypeahead<E extends Element> extends AbstractTypeahead<E> {
   public static final int DEFAULT_ROLLING_SIZE = 100;
@@ -132,9 +133,9 @@ class RollingTypeahead<E extends Element> extends AbstractTypeahead<E> {
           logger.warn("rolling update failure: no rolling handler");
         } else {
           if(indexRoller.roll(list)) {
-            logger.info("rolling update success: removed " + list.size()  + " updates");
+            logger.info("rolling update success: " + list.size()  + "/" + elementQueue.size());
           } else {
-            logger.warn("rolling update failure: removed " + list.size()  + " updates");
+            logger.warn("rolling update failure: " + list.size()  + "/" + elementQueue.size());
           }
         }
       } catch(Exception e) {

@@ -146,9 +146,6 @@ public class GenericTypeaheadIndexRoller<E extends Element> implements IndexRoll
       // Update source connections
       connectionsStore.putConnections(key, connections, maxScn);
     }
-    
-    // Sync all changes to disk
-    connectionsStore.sync();
   }
   
   public static final class ElementScoreCmpDsc implements Comparator<Element> {

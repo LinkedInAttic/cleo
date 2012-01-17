@@ -34,6 +34,7 @@ import cleo.search.collector.Collector;
 import cleo.search.collector.MultiCollector;
 import cleo.search.collector.MultiSourceCollector;
 import cleo.search.collector.SimpleCollector;
+import cleo.search.util.Strings;
 
 /**
  * MultiTypeahead - A Typeahead to delegate tasks to multiple individual Typeahead(s). 
@@ -97,7 +98,7 @@ public class MultiTypeahead<E extends Element> implements Typeahead<E> {
     return search(uid, terms, collector, Long.MAX_VALUE);
   }
   
-  @Override
+  @Override @SuppressWarnings("unchecked")
   public Collector<E> search(int uid, String[] terms, Collector<E> collector, long timeoutMillis) {
     List<TypeaheadTask<E>> taskList = new ArrayList<TypeaheadTask<E>>(typeaheads.size());
     MultiSourceCollector<E> multiCollector = null;
@@ -149,17 +150,10 @@ public class MultiTypeahead<E extends Element> implements Typeahead<E> {
     StringBuilder sb = new StringBuilder();
     
     sb.append(getName())
+      .append(" Timeout") 
       .append(" user=").append(user)
       .append(" time=").append(timeout)
-      .append(" terms=").append('{');
-    for(String s : terms) {
-      sb.append(s).append(',');
-    }
-    int lastIndex = sb.length() - 1;
-    if(sb.charAt(lastIndex) == ',') {
-      sb.deleteCharAt(lastIndex);
-    }
-    sb.append('}').append(" Timeout");
+      .append(" terms=").append(Strings.toSet(terms));
     
     logger.warn(sb.toString());
   }
