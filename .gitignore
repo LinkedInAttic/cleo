@@ -1,3 +1,6 @@
+.classpath
+.settings
+.project
 eclipse-build
 target
 docs
