@@ -126,7 +126,7 @@ public class CompanyTypeahead {
    *   -server -Xms4g -Xmx4g
    *   
    * Program Arguments:
-   *   src/examples/resources/company-config/i001.config src/examples/resources/company-config/i002.config
+   *   src/examples/resources/generic-config/i001.config src/examples/resources/generic-config/i002.config
    * </pre>
    */
   public static void main(String[] args) throws Exception {
