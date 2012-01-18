@@ -98,7 +98,7 @@ public class MultiTypeahead<E extends Element> implements Typeahead<E> {
     return search(uid, terms, collector, Long.MAX_VALUE);
   }
   
-  @Override @SuppressWarnings("unchecked")
+  @Override
   public Collector<E> search(int uid, String[] terms, Collector<E> collector, long timeoutMillis) {
     List<TypeaheadTask<E>> taskList = new ArrayList<TypeaheadTask<E>>(typeaheads.size());
     MultiSourceCollector<E> multiCollector = null;

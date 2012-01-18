@@ -50,7 +50,7 @@ import cleo.search.util.DaemonThreadFactory;
  * 01/17, 2012 - Speed up rolling <br/>
  */
 class RollingTypeahead<E extends Element> extends AbstractTypeahead<E> {
-  public static final int DEFAULT_ROLLING_SIZE = 100;
+  public static final int DEFAULT_ROLLING_SIZE = 1000;
   
   private final static Logger logger = Logger.getLogger(RollingTypeahead.class);
   private final ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
