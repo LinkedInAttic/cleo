@@ -29,6 +29,8 @@ version: 1.2.3
 
 https://github.com/linkedin/cleo/tree/master/src/examples
 
+https://github.com/jingwei/cleo-primer
+
 ### Eclipse:
 
 Set up Eclipse for Cleo by executing the command below:
