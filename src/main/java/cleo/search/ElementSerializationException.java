@@ -28,4 +28,8 @@ public class ElementSerializationException extends RuntimeException {
   public ElementSerializationException(String message) {
     super(message);
   }
+
+  public ElementSerializationException(Throwable cause) {
+    super(cause);
+  }
 }
