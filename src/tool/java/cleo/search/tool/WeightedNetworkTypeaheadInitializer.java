@@ -39,6 +39,9 @@ import cleo.search.util.Range;
  * 
  * @author jwu
  * @since 04/20, 2011
+ * 
+ * <p>
+ * 02/06, 2012 - Optimize by loading weighted connection store before element store. <br/>
  */
 public class WeightedNetworkTypeaheadInitializer<E extends Element> implements TypeaheadInitializer<E>, IndexerInitializer<E>, ConnectionIndexerInitializer {
   private final WeightedNetworkTypeahead<E> networkTypeahead;
@@ -67,6 +70,13 @@ public class WeightedNetworkTypeaheadInitializer<E extends Element> implements T
   }
   
   protected WeightedNetworkTypeahead<E> createTypeahead(NetworkTypeaheadConfig<E> config) throws Exception {
+    // create weightedConnectionsStore
+    ArrayStoreWeights weightedConnectionsStore = StoreFactory.createArrayStoreWeights(
+        config.getConnectionsStoreDir(),
+        config.getConnectionsStoreCapacity(),
+        config.getConnectionsStoreSegmentFactory(),
+        config.getConnectionsStoreSegmentMB());
+    
     // create elementStore
     ArrayStoreElement<E> elementStore = StoreFactory.createElementStorePartition(
         config.getElementStoreDir(),
@@ -80,13 +90,6 @@ public class WeightedNetworkTypeaheadInitializer<E extends Element> implements T
     if(config.isElementStoreCached()) {
       elementStore = new MemoryArrayStoreElement<E>(elementStore);
     }
-    
-    // create weightedConnectionsStore
-    ArrayStoreWeights weightedConnectionsStore = StoreFactory.createArrayStoreWeights(
-        config.getConnectionsStoreDir(),
-        config.getConnectionsStoreCapacity(),
-        config.getConnectionsStoreSegmentFactory(),
-        config.getConnectionsStoreSegmentMB());
     
     // create bloomFilter
     BloomFilter<Integer> bloomFilter = new FnvBloomFilter(config.getFilterPrefixLength());

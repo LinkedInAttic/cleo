@@ -39,6 +39,9 @@ import krati.core.segment.WriteBufferSegmentFactory;
  * 
  * @author jwu
  * @since 02/08, 2011
+ * 
+ * <p>
+ * 02/06, 2012 - Optimize by loading connection store before element store. <br/>
  */
 public class VanillaNetworkTypeaheadInitializer<E extends Element> implements TypeaheadInitializer<E>, IndexerInitializer<E> {
   private final VanillaNetworkTypeahead<E> networkTypeahead;
@@ -62,6 +65,12 @@ public class VanillaNetworkTypeaheadInitializer<E extends Element> implements Ty
   }
   
   protected VanillaNetworkTypeahead<E> createTypeahead(NetworkTypeaheadConfig<E> config) throws Exception {
+    // create connectionsStore
+    ArrayStoreConnections connectionsStore = StoreFactory.createArrayStoreConnections(
+        config.getConnectionsStoreDir(),
+        config.getConnectionsStoreCapacity(),
+        config.getConnectionsStoreSegmentMB());
+    
     // create elementStore
     ArrayStoreElement<E> elementStore = StoreFactory.createElementStorePartition(
         config.getElementStoreDir(),
@@ -75,12 +84,6 @@ public class VanillaNetworkTypeaheadInitializer<E extends Element> implements Ty
     if(config.isElementStoreCached()) {
       elementStore = new MemoryArrayStoreElement<E>(elementStore);
     }
-    
-    // create connectionsStore
-    ArrayStoreConnections connectionsStore = StoreFactory.createArrayStoreConnections(
-        config.getConnectionsStoreDir(),
-        config.getConnectionsStoreCapacity(),
-        config.getConnectionsStoreSegmentMB());
     
     // create selectorFactory
     SelectorFactory<E> selectorFactory = config.getSelectorFactory();

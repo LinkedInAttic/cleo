@@ -10,7 +10,7 @@
   <groupId>com.sna-projects.cleo</groupId>
   <artifactId>cleo</artifactId>
   <packaging>bundle</packaging>
-  <version>1.2.3</version>
+  <version>1.2.4-SNAPSHOT</version>
 
   <name>cleo</name>
   <description>Flexible, partial, out-of-order real-time typeahead search</description>
