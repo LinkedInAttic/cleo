@@ -29,6 +29,7 @@ import cleo.search.selector.ScoredElementSelector;
 import cleo.search.selector.ScoredPrefixSelector;
 import cleo.search.selector.Selector;
 import cleo.search.selector.SelectorContext;
+import cleo.search.selector.StrictPrefixSelector;
 import cleo.search.util.ElementHitScoreComparator;
 import cleo.search.util.ElementScoreComparator;
 import junit.framework.TestCase;
@@ -389,5 +390,28 @@ public class TestSelector extends TestCase {
     for(int i = 0; i < cnt; i++) {
       assertEquals(elemList.get(i), hitList.get(i).getElement());
     }
+  }
+  
+  public void testStringPrefixSelector() {
+    Element elem = new SimpleElement(1);
+    elem.setTerms(new String[] {"open", "source", "software", "systems"});
+    elem.setTimestamp(System.currentTimeMillis());
+    
+    SelectorContext ctx = new SelectorContext();
+    
+    Selector<Element> selector = new StrictPrefixSelector<Element>("soft", "system");
+    assertTrue(selector.select(elem, ctx));
+    
+    selector = new StrictPrefixSelector<Element>("open", "system");
+    assertTrue(selector.select(elem, ctx));
+    
+    selector = new StrictPrefixSelector<Element>("system", "open");
+    assertFalse(selector.select(elem, ctx));
+    
+    selector = new StrictPrefixSelector<Element>("sour", "system");
+    assertTrue(selector.select(elem, ctx));
+    
+    selector = new StrictPrefixSelector<Element>("system", "sour");
+    assertFalse(selector.select(elem, ctx));
   }
 }
