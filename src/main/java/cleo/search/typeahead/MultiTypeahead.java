@@ -33,7 +33,7 @@ import cleo.search.Element;
 import cleo.search.collector.Collector;
 import cleo.search.collector.MultiCollector;
 import cleo.search.collector.MultiSourceCollector;
-import cleo.search.collector.SimpleCollector;
+import cleo.search.collector.SortedCollector;
 import cleo.search.util.Strings;
 
 /**
@@ -88,7 +88,7 @@ public class MultiTypeahead<E extends Element> implements Typeahead<E> {
   
   @Override
   public List<E> search(int uid, String[] terms, int maxNumResults, long timeoutMillis) {
-    Collector<E> collector = new SimpleCollector<E>(maxNumResults);
+    Collector<E> collector = new SortedCollector<E>(maxNumResults);
     collector = search(uid, terms, collector, timeoutMillis);
     return collector.elements();
   }
