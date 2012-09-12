@@ -75,10 +75,12 @@ public class GenericTypeaheadInitializer<E extends Element> implements Typeahead
           config.getConnectionsStoreSegmentMB(),
           config.getConnectionsStoreSegmentFactory());
     
-    // Load connectionsStore in Memory
-    connectionsStore = new MemoryConnectionsStore<String>(
-        config.getConnectionsStoreCapacity(),
-        connectionsStore);
+    // load connectionsStore in memory
+    if(config.isConnectionsStoreCached()) {
+      connectionsStore = new MemoryConnectionsStore<String>(
+          config.getConnectionsStoreCapacity(),
+          connectionsStore);
+    }
     
     // create selectorFactory
     SelectorFactory<E> selectorFactory = config.getSelectorFactory();

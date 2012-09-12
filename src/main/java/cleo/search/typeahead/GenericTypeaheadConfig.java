@@ -42,9 +42,6 @@ public class GenericTypeaheadConfig<E extends Element> {
   private int elementStoreSegmentMB;
   private SegmentFactory elementStoreSegmentFactory = new MemorySegmentFactory();
   
-  // cache elementStore in memory
-  private boolean elementStoreCached = true;
-  
   // connectionsStore
   private File connectionsStoreDir;
   private int connectionsStoreCapacity;
@@ -52,6 +49,12 @@ public class GenericTypeaheadConfig<E extends Element> {
   private SegmentFactory connectionsStoreSegmentFactory = new MemorySegmentFactory();
   private int connectionsStoreIndexSegmentMB;
   private SegmentFactory connectionsStoreIndexSegmentFactory = new MemorySegmentFactory();
+  
+  // whether cache elementStore in memory
+  private boolean elementStoreCached = true;
+  
+  // whether cache connectionsStore in memory
+  private boolean connectionsStoreCached = false;
   
   // BloomFilter prefixLength
   private int filterPrefixLength = 2;
@@ -225,5 +228,17 @@ public class GenericTypeaheadConfig<E extends Element> {
   
   public long getSearchTimeoutMillis() {
     return searchTimeoutMillis;
+  }
+  
+  public void setConnectionsStoreCached(boolean connectionsStoreCached) {
+    this.connectionsStoreCached = connectionsStoreCached;
+  }
+  
+  public boolean getConnectionsStoreCached() {
+    return connectionsStoreCached;
+  }
+  
+  public boolean isConnectionsStoreCached() {
+    return connectionsStoreCached;
   }
 }
