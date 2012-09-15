@@ -317,15 +317,10 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
       updateConnectionStore(oldElement, element);
     }
     
-    // Persist connectionsStore if elementStore is persisted
-    if(elementStore.getHWMark() == elementStore.getLWMark()) {
-      connectionsStore.persist();
-    }
-    
     // Logging
     if(logger.isDebugEnabled()) {
       logger.debug(getName() + " indexed element " + element);
-    } else {
+    } else if(logger.isInfoEnabled()) {
       logger.info(getName() +  " indexed element " + element.getElementId());
     }
     
