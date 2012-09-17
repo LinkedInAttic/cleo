@@ -23,7 +23,7 @@ groupId: com.sna-projects.cleo
 
 artifactId: cleo
 
-version: 1.2.3
+version: 1.2.5
 
 ### Code Examples:
 

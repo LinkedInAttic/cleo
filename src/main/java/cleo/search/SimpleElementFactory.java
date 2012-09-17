@@ -42,7 +42,7 @@ public class SimpleElementFactory implements ElementFactory<SimpleElement> {
   public SimpleElement createElement(Element element) {
     SimpleElement e = new SimpleElement(element.getElementId());
     
-    e.setTerms(e.getTerms());
+    e.setTerms(element.getTerms());
     e.setScore(element.getScore());
     e.setTimestamp(element.getTimestamp());
     
