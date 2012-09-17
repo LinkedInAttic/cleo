@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import krati.Persistable;
 
@@ -83,6 +84,11 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
    * The scanner to load element scores.
    */
   protected final ScoreScanner scoreScanner;
+  
+  /**
+   * The reentrant lock for updating underlying stores.
+   */
+  protected final ReentrantLock writeLock = new ReentrantLock();
   
   /**
    * The maximum key length (the number of chars).
@@ -345,33 +351,39 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
   }
   
   @Override
-  public synchronized boolean index(E element) throws Exception {
-    int elemId = element.getElementId();
-    if(!elementStore.hasIndex(elemId)) {
-      return false;
-    }
+  public boolean index(E element) throws Exception {
+    writeLock.lock();
     
-    // Set element score
-    if(scoreStore.hasIndex(elemId) && element.getScore() == 0) {
-      element.setScore(scoreStore.get(elemId));
-    }
-    
-    // Check if prefixes changed
-    boolean prefixChanged = false;
-    E oldElement = elementStore.getElement(elemId);
-    if(oldElement == null || !Arrays.equals(element.getTerms(), oldElement.getTerms())) {
-      prefixChanged = true;
-    }
-    
-    // Update elementStore, filterStore
-    long scn = element.getTimestamp();
-    long elemFilter = bloomFilter.computeIndexFilter(element);
-    filterStore.set(elemId, elemFilter);
-    elementStore.setElement(elemId, element, scn);
-    
-    // Update connectionsStore upon prefix changes
-    if(prefixChanged) {
-      updateConnectionStore(oldElement, element);
+    try {
+      int elemId = element.getElementId();
+      if(!elementStore.hasIndex(elemId)) {
+        return false;
+      }
+      
+      // Set element score
+      if(scoreStore.hasIndex(elemId) && element.getScore() == 0) {
+        element.setScore(scoreStore.get(elemId));
+      }
+      
+      // Check if prefixes changed
+      boolean prefixChanged = false;
+      E oldElement = elementStore.getElement(elemId);
+      if(oldElement == null || !Arrays.equals(element.getTerms(), oldElement.getTerms())) {
+        prefixChanged = true;
+      }
+      
+      // Update elementStore, filterStore
+      long scn = element.getTimestamp();
+      long elemFilter = bloomFilter.computeIndexFilter(element);
+      filterStore.set(elemId, elemFilter);
+      elementStore.setElement(elemId, element, scn);
+      
+      // Update connectionsStore upon prefix changes
+      if(prefixChanged) {
+        updateConnectionStore(oldElement, element);
+      }
+    } finally {
+      writeLock.unlock();
     }
     
     // Logging
@@ -383,23 +395,40 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
   }
   
   @Override
-  public synchronized void flush() throws IOException {
+  public void flush() throws IOException {
     persist();
   }
   
   @Override
-  public synchronized void sync() throws IOException {
-    elementStore.sync();
-    connectionsStore.sync();
+  public void sync() throws IOException {
+    writeLock.lock();
+    
+    try {
+      elementStore.sync();
+      connectionsStore.sync();
+    } finally {
+      writeLock.unlock();
+    }
   }
   
   @Override
-  public synchronized void persist() throws IOException {
-    elementStore.persist();
-    connectionsStore.persist();
+  public void persist() throws IOException {
+    writeLock.lock();
+    
+    try {
+      elementStore.persist();
+      connectionsStore.persist();
+    } finally {
+      writeLock.unlock();
+    }
   }
   
-  public synchronized void refresh() throws IOException {
+  /**
+   * Refresh indexes using the descending order of element scores.
+   * 
+   * @throws IOException
+   */
+  public void refresh() throws IOException {
     int counter = 0;
     long startTime = System.currentTimeMillis();
     
@@ -408,12 +437,13 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
     
     // Re-score all elements for every connection source
     List<E> list = new ArrayList<E>(10000);
+    
+    // Create an element comparator in the descending order of scores
     Comparator<E> scoreCmpDsc = new Comparator<E>() {
       @Override
       public int compare(E e0, E e1) {
         float score0 = e0.getScore();
         float score1 = e1.getScore();
-        // Descending order
         return score0 < score1 ? 1 : (score0 == score1 ? (e0.getElementId() - e1.getElementId()) : -1);
       }
     };
@@ -423,34 +453,38 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
       counter++;
       String source = iter.next();
       if(source != null) {
-        int[] connections = connectionsStore.getConnections(source);
-        if(connections != null) {
-          list.clear();
-          
-          for(int i = 0, cnt = connections.length; i < cnt; i++) {
-            if(elementStore.hasIndex(connections[i])) {
-              E elem = elementStore.getElement(connections[i]);
-              if(elem != null) {
-                list.add(elem);
+        writeLock.lock();
+        
+        try {
+          int[] connections = connectionsStore.getConnections(source);
+          if(connections != null) {
+            list.clear();
+            
+            for(int i = 0, cnt = connections.length; i < cnt; i++) {
+              if(elementStore.hasIndex(connections[i])) {
+                E elem = elementStore.getElement(connections[i]);
+                if(elem != null) {
+                  list.add(elem);
+                }
               }
             }
-          }
-          
-          Collections.sort(list, scoreCmpDsc);
-          if(list.size() < connections.length) {
-            connections = new int[list.size()];
-          }
-          
-          for(int i = 0, cnt = connections.length; i < cnt; i++) {
-            connections[i] = list.get(i).getElementId();
-          }
-          
-          // Update source connections
-          try {
+            
+            Collections.sort(list, scoreCmpDsc);
+            if(list.size() < connections.length) {
+              connections = new int[list.size()];
+            }
+            
+            for(int i = 0, cnt = connections.length; i < cnt; i++) {
+              connections[i] = list.get(i).getElementId();
+            }
+            
+            // Update source connections
             connectionsStore.putConnections(source, connections, getHWMark());
-          } catch (Exception e) {
-            logger.error(getName() + " failed to refresh source: " + source, e);
           }
+        } catch (Exception e) {
+          logger.error(getName() + " failed to refresh source: " + source, e);
+        } finally {
+          writeLock.unlock();
         }
       }
       
@@ -458,16 +492,23 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
         logger.info(getName() + " refreshed " + counter);
       }
     }
-    logger.info(getName() + " refreshed " + counter);
     
-    connectionsStore.sync();
     long totalTime = System.currentTimeMillis() - startTime;
-    logger.info(getName() + " refreshed in " + (totalTime/1000) + " seconds");
+    logger.info(getName() + " refreshed " + counter + " in " + (totalTime/1000) + " seconds");
+    
+    // Sync all updates
+    connectionsStore.sync();
   }
   
   @Override
-  public synchronized void saveHWMark(long endOfPeriod) throws Exception {
-    connectionsStore.saveHWMark(endOfPeriod);
+  public void saveHWMark(long endOfPeriod) throws Exception {
+    writeLock.lock();
+    
+    try {
+      connectionsStore.saveHWMark(endOfPeriod);
+    } finally {
+      writeLock.unlock();
+    }
   }
   
   @Override
