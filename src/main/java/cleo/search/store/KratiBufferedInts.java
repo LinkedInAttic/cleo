@@ -251,13 +251,14 @@ public class KratiBufferedInts implements DataStoreInts {
       return delete(key, scn);
     }
     
-    bufInts.put(key, new int[0], scn);
-    int index = getExtensionIndex(key);
     ReentrantLock l = getLock(key);
     
     l.lock();
     try {
+      bufInts.put(key, new int[0], scn);
+      int index = getExtensionIndex(key);
       extInts.set(index, elemIds, scn);
+      
       return true;
     } finally {
         l.unlock();
