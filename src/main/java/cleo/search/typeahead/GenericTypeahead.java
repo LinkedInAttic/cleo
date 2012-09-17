@@ -59,16 +59,52 @@ import cleo.search.util.ScoreScanner;
  * 09/16, 2012 - Used buffering connections store instead of roller to enhance indexing performance <br/> 
  */
 public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> implements Indexer<E>, Persistable {
+  /**
+   * The logger.
+   */
   private final static Logger logger = Logger.getLogger(GenericTypeahead.class);
   
+  /**
+   * The mapping from string to list of integers.
+   */
   protected final ConnectionsStore<String> connectionsStore;
+  
+  /**
+   * The long-based bloom filter store.
+   */
   protected final LongArrayPartition filterStore;
+  
+  /**
+   * The float-based element score store.
+   */
   protected final FloatArrayPartition scoreStore;
+  
+  /**
+   * The scanner to load element scores.
+   */
   protected final ScoreScanner scoreScanner;
+  
+  /**
+   * The maximum key length (the number of chars).
+   */
   protected final int maxKeyLength;
   
+  /**
+   * The maximum element score.
+   */
   protected volatile float maxElementScore;
   
+  /**
+   * Creates a new GenericTypeahead.
+   * 
+   * @param name             - the name
+   * @param elementStore     - the element store
+   * @param connectionsStore - the mapping from source to list of integers (i.e. connections)
+   * @param selectorFactory  - the selector factory
+   * @param bloomFilter      - the Bloom filter
+   * @param scoreScanner     - the element score scanner
+   * @param maxKeyLength     - the maximum key length
+   */
   public GenericTypeahead(String name,
                           ArrayStoreElement<E> elementStore,
                           ConnectionsStore<String> connectionsStore,
@@ -245,51 +281,6 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
     return System.currentTimeMillis() - startTime;
   }
   
-  @Override
-  public synchronized boolean index(E element) throws Exception {
-    int elemId = element.getElementId();
-    if(!elementStore.hasIndex(elemId)) {
-      return false;
-    }
-    
-    // Set element score
-    if(scoreStore.hasIndex(elemId) && element.getScore() == 0) {
-      element.setScore(scoreStore.get(elemId));
-    }
-    
-    // Check if prefixes changed
-    boolean prefixChanged = false;
-    E oldElement = elementStore.getElement(elemId);
-    if(oldElement == null || !Arrays.equals(element.getTerms(), oldElement.getTerms())) {
-      prefixChanged = true;
-    }
-    
-    // Update elementStore, filterStore
-    long scn = element.getTimestamp();
-    long elemFilter = bloomFilter.computeIndexFilter(element);
-    filterStore.set(elemId, elemFilter);
-    elementStore.setElement(elemId, element, scn);
-    
-    // Update connectionsStore upon prefix changes
-    if(prefixChanged) {
-      updateConnectionStore(oldElement, element);
-    }
-    
-    // Logging
-    if(logger.isDebugEnabled()) {
-      logger.debug(getName() + " indexed element " + element);
-    } else if(logger.isInfoEnabled()) {
-      logger.info(getName() +  " indexed element " + element.getElementId());
-    }
-    
-    return true;
-  }
-  
-  @Override
-  public synchronized void flush() throws IOException {
-    persist();
-  }
-  
   /**
    * Update the underlying connectiosStore.
    *  
@@ -351,6 +342,49 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
     } else {
       logger.info("ignored element: " + newElement);
     }
+  }
+  
+  @Override
+  public synchronized boolean index(E element) throws Exception {
+    int elemId = element.getElementId();
+    if(!elementStore.hasIndex(elemId)) {
+      return false;
+    }
+    
+    // Set element score
+    if(scoreStore.hasIndex(elemId) && element.getScore() == 0) {
+      element.setScore(scoreStore.get(elemId));
+    }
+    
+    // Check if prefixes changed
+    boolean prefixChanged = false;
+    E oldElement = elementStore.getElement(elemId);
+    if(oldElement == null || !Arrays.equals(element.getTerms(), oldElement.getTerms())) {
+      prefixChanged = true;
+    }
+    
+    // Update elementStore, filterStore
+    long scn = element.getTimestamp();
+    long elemFilter = bloomFilter.computeIndexFilter(element);
+    filterStore.set(elemId, elemFilter);
+    elementStore.setElement(elemId, element, scn);
+    
+    // Update connectionsStore upon prefix changes
+    if(prefixChanged) {
+      updateConnectionStore(oldElement, element);
+    }
+    
+    // Logging
+    if(logger.isInfoEnabled()) {
+      logger.info(getName() +  " indexed element " + element.getElementId());
+    }
+    
+    return true;
+  }
+  
+  @Override
+  public synchronized void flush() throws IOException {
+    persist();
   }
   
   @Override
