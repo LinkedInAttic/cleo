@@ -98,6 +98,7 @@ public abstract class AbstractTestVanillaNetworkTypeahead<E extends Element> ext
           elementStoreDir,
           getElementStoreIndexStart(),
           getElementStoreCapacity(),
+          new MemorySegmentFactory(),
           elementStoreSegMB,
           createElementSerializer());
     return elementStore;

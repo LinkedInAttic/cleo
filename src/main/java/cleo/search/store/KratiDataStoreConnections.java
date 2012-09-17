@@ -16,6 +16,7 @@
 
 package cleo.search.store;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -24,39 +25,73 @@ import java.util.Iterator;
  * @author jwu
  * @since 02/04, 2011
  */
-public final class KratiDataStoreConnections extends KratiDataStoreInts implements ConnectionsStore<String> {
+public final class KratiDataStoreConnections implements ConnectionsStore<String> {
+  /**
+   * The underlying store for list of integers.
+   */
+  private final DataStoreInts storeInts;
   
-  public KratiDataStoreConnections(KratiDataStore store) {
-    super(store);
+  /**
+   * Creates a new instance KratiDataStoreConnections.
+   * 
+   * @param storeInts - the underlying store for list of integers
+   */
+  public KratiDataStoreConnections(DataStoreInts storeInts) {
+    this.storeInts = storeInts;
   }
   
   @Override
   public int[] getConnections(String source) {
-    return get(source);
+    return storeInts.get(source);
   }
   
   @Override
   public void putConnections(String source, int[] connections, long scn) throws Exception {
-    put(source, connections, scn);
+    storeInts.put(source, connections, scn);
   }
   
   @Override
   public void deleteConnections(String source, long scn) throws Exception {
-    delete(source, scn);
+    storeInts.delete(source, scn);
   }
   
   @Override
   public void addConnection(String source, int connection, long scn) throws Exception {
-    add(source, connection, scn);
+    storeInts.add(source, connection, scn);
   }
   
   @Override
   public void removeConnection(String source, int connection, long scn) throws Exception {
-    remove(source, connection, scn);
+    storeInts.remove(source, connection, scn);
+  }
+  
+  @Override
+  public Iterator<String> sourceIterator() {
+    return storeInts.keyIterator();
+  }
+  
+  @Override
+  public void sync() throws IOException {
+    storeInts.sync();
+  }
+  
+  @Override
+  public void persist() throws IOException {
+    storeInts.persist();
+  }
+  
+  @Override
+  public long getLWMark() {
+    return storeInts.getLWMark();
   }
 
   @Override
-  public Iterator<String> sourceIterator() {
-    return keyIterator();
+  public long getHWMark() {
+    return storeInts.getHWMark();
+  }
+  
+  @Override
+  public void saveHWMark(long endOfPeriod) throws Exception {
+    storeInts.saveHWMark(endOfPeriod);
   }
 }

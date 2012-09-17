@@ -57,6 +57,7 @@ public class GenericTypeaheadInitializer<E extends Element> implements Typeahead
           config.getElementStoreDir(),
           config.getElementStoreIndexStart(),
           config.getElementStoreCapacity(),
+          config.getElementStoreSegmentFactory(),
           config.getElementStoreSegmentMB(),
           config.getElementSerializer());
     

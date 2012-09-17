@@ -32,6 +32,8 @@ import cleo.search.util.CompositeTermsHandler;
 import cleo.search.util.TermsDedup;
 import cleo.search.util.TermsScanner;
 
+import krati.core.segment.MemorySegmentFactory;
+import krati.core.segment.SegmentFactory;
 import krati.util.Chronos;
 
 /**
@@ -163,10 +165,11 @@ public class TypeaheadElementStoreBootstrap extends ArrayStoreElementBootstrap<T
     
     Chronos c = new Chronos();
     
+    SegmentFactory elementStoreSegFactory = new MemorySegmentFactory();
     ElementFactory<TypeaheadElement> elementFactory = new SimpleTypeaheadElementFactory();
     ElementSerializer<TypeaheadElement> elementSerializer = new TypeaheadElementSerializer();
     ArrayStoreElement<TypeaheadElement> elementStore =
-      StoreFactory.createElementStorePartition(elementStoreDir, idStart, idCount, elementStoreSegMB, elementSerializer);
+      StoreFactory.createElementStorePartition(elementStoreDir, idStart, idCount, elementStoreSegFactory, elementStoreSegMB, elementSerializer);
     TypeaheadElementStoreBootstrap elementStoreBootstrap =
       new TypeaheadElementStoreBootstrap(elementStore, elementFactory);
     

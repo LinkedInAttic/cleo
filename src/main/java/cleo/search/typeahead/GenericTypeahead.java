@@ -112,7 +112,7 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
     
     // Initialize RollingTypeahead
     this.rollingTypeahead = initRollingTypeahead(rollingSize);
-    this.setRollingEnabled(true);
+    this.setRollingEnabled(false);
     
     logger.info(name + " started.");
   }

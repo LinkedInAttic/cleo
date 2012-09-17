@@ -198,6 +198,10 @@ public class KratiDataStore implements Persistable {
     return indexedStore;
   }
   
+  public int getLength(byte[] key) {
+    return indexedStore.getLength(key);
+  }
+  
   public byte[] get(byte[] key) {
     return indexedStore.get(key);
   }

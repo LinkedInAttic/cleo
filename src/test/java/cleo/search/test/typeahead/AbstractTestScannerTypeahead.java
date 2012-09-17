@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import junit.framework.TestCase;
+import krati.core.segment.MemorySegmentFactory;
 import cleo.search.Element;
 import cleo.search.ElementSerializer;
 import cleo.search.filter.BloomFilter;
@@ -79,6 +80,7 @@ public abstract class AbstractTestScannerTypeahead<E extends Element> extends Te
           elementStoreDir,
           getElementStoreIndexStart(),
           getElementStoreCapacity(),
+          new MemorySegmentFactory(),
           elementStoreSegMB,
           createElementSerializer());
     return elementStore;

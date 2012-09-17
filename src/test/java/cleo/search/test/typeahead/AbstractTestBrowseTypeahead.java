@@ -32,6 +32,7 @@ import cleo.search.test.util.FileUtils;
 import cleo.search.typeahead.BrowseTypeahead;
 
 import junit.framework.TestCase;
+import krati.core.segment.MemorySegmentFactory;
 
 /**
  * AbstractTestBrowseTypeahead
@@ -80,6 +81,7 @@ public abstract class AbstractTestBrowseTypeahead<E extends Element> extends Tes
           elementStoreDir,
           getElementStoreIndexStart(),
           getElementStoreCapacity(),
+          new MemorySegmentFactory(),
           elementStoreSegMB,
           createElementSerializer());
     return elementStore;

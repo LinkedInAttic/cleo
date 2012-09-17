@@ -18,6 +18,8 @@ package cleo.search.util;
 
 import java.util.Iterator;
 
+import krati.io.Serializer;
+
 /**
  * StringIterator
  * 
@@ -26,9 +28,11 @@ import java.util.Iterator;
  */
 public final class StringIterator implements Iterator<String> {
   private final Iterator<byte[]> iterator;
+  private final Serializer<String> serializer;
   
-  public StringIterator(Iterator<byte[]> iterator) {
+  public StringIterator(Iterator<byte[]> iterator, Serializer<String> serializer) {
     this.iterator = iterator;
+    this.serializer = serializer;
   }
 
   @Override
@@ -38,7 +42,7 @@ public final class StringIterator implements Iterator<String> {
 
   @Override
   public String next() {
-    return new String(iterator.next());
+    return serializer.deserialize(iterator.next());
   }
   
   @Override

@@ -16,6 +16,8 @@
 
 package cleo.search.store;
 
+import java.io.IOException;
+
 /**
  * KratiArrayStoreConnections
  * 
@@ -25,68 +27,113 @@ package cleo.search.store;
  * <p>
  * 09/18, 2011 - Added readBytes to support partial reads <br/>
  */
-public final class KratiArrayStoreConnections extends KratiArrayStoreInts implements ArrayStoreConnections {
+public final class KratiArrayStoreConnections implements ArrayStoreConnections {
+  /**
+   * The underlying ArrayStore for list of integers.
+   */
+  protected final KratiArrayStoreInts storeInts;
   
-  public KratiArrayStoreConnections(KratiArrayStore store) {
-    this(store, 0);
-  }
-  
-  public KratiArrayStoreConnections(KratiArrayStore store, int indexStart) {
-    super(store);
+  public KratiArrayStoreConnections(KratiArrayStoreInts storeInts) {
+    this.storeInts = storeInts;
   }
   
   @Override
   public int[] getConnections(int source) {
-    return get(source);
+    return storeInts.get(source);
   }
   
   @Override
   public void setConnections(int source, int[] connections, long scn) throws Exception {
-    set(source, connections, scn);
+    storeInts.set(source, connections, scn);
   }
   
   @Override
   public void deleteConnections(int source, long scn) throws Exception {
-    delete(source, scn);
+    storeInts.delete(source, scn);
   }
   
   @Override
   public void addConnection(int source, int connection, long scn) throws Exception {
-    add(source, connection, scn);
+    storeInts.add(source, connection, scn);
   }
   
   @Override
   public void removeConnection(int source, int connection, long scn) throws Exception {
-    remove(source, connection, scn);
+    storeInts.remove(source, connection, scn);
   }
 
   @Override
   public byte[] getBytes(int index) {
-    return store.get(index);
+    return storeInts.getUnderlyingStore().get(index);
   }
 
   @Override
   public int getBytes(int index, byte[] dst) {
-    return store.get(index, dst);
+    return storeInts.getUnderlyingStore().get(index, dst);
   }
 
   @Override
   public int getBytes(int index, byte[] dst, int offset) {
-    return store.get(index, dst, offset);
+    return storeInts.getUnderlyingStore().get(index, dst, offset);
   }
 
   @Override
   public int readBytes(int index, byte[] dst) {
-    return store.read(index, dst);
+    return storeInts.getUnderlyingStore().read(index, dst);
   }
 
   @Override
   public int readBytes(int index, int offset, byte[] dst) {
-    return store.read(index, offset, dst);
+    return storeInts.getUnderlyingStore().read(index, offset, dst);
   }
 
   @Override
   public int getLength(int index) {
-    return store.getLength(index);
+    return storeInts.getUnderlyingStore().getLength(index);
+  }
+
+  @Override
+  public void sync() throws IOException {
+    storeInts.sync();
+  }
+
+  @Override
+  public void persist() throws IOException {
+    storeInts.persist();
+  }
+
+  @Override
+  public long getLWMark() {
+    return storeInts.getLWMark();
+  }
+
+  @Override
+  public long getHWMark() {
+    return storeInts.getHWMark();
+  }
+
+  @Override
+  public void saveHWMark(long endOfPeriod) throws Exception {
+    storeInts.saveHWMark(endOfPeriod);
+  }
+
+  @Override
+  public void clear() {
+    storeInts.clear();
+  }
+
+  @Override
+  public int length() {
+    return storeInts.length();
+  }
+
+  @Override
+  public boolean hasIndex(int index) {
+    return storeInts.hasIndex(index);
+  }
+
+  @Override
+  public Type getType() {
+    return storeInts.getType();
   }
 }

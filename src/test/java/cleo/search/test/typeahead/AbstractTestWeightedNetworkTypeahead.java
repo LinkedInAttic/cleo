@@ -97,6 +97,7 @@ public abstract class AbstractTestWeightedNetworkTypeahead<E extends Element> ex
           elementStoreDir,
           getElementStoreIndexStart(),
           getElementStoreCapacity(),
+          new MemorySegmentFactory(),
           elementStoreSegMB,
           createElementSerializer());
     return elementStore;

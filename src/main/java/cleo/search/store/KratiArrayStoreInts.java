@@ -37,6 +37,13 @@ public class KratiArrayStoreInts implements ArrayStoreInts {
     this.store = store;
   }
   
+  /**
+   * @return the underlying {@link KratiArrayStore}.
+   */
+  public final KratiArrayStore getUnderlyingStore() {
+    return store;
+  }
+  
   @Override
   public String getStatus() {
     return store.getStatus();
@@ -151,6 +158,43 @@ public class KratiArrayStoreInts implements ArrayStoreInts {
       bb = ByteBuffer.wrap(upd);
       bb.put(dat, 0, safeLen);
       bb.putInt(elemId);
+    }
+    
+    // Update store
+    store.set(index, upd, scn);
+    internalPersist(scn);
+  }
+  
+  /**
+   * Adds an array of element IDs to the specified <code>index</code>
+   * 
+   * @param index   - the array store index
+   * @param elemIds - the array of element IDs
+   * @param scn     - the monotonically increasing System Change Number (SCN)
+   * @throws Exception
+   */
+  public synchronized void add(int index, int[] elemIds, long scn) throws Exception {
+    store.expandCapacity(index);
+    
+    byte[] upd = null;
+    byte[] dat = store.get(index);
+    
+    if (dat == null) {
+      upd = new byte[NUM_BYTES_IN_INT * elemIds.length];
+      ByteBuffer bb = ByteBuffer.wrap(upd);
+      for(int i = 0; i < elemIds.length; i++) {
+        bb.putInt(elemIds[i]);
+      }
+    } else {
+      ByteBuffer bb = ByteBuffer.wrap(dat);
+      
+      int safeLen = dat.length - (dat.length % NUM_BYTES_IN_INT);
+      upd = new byte[safeLen + NUM_BYTES_IN_INT * elemIds.length];
+      bb = ByteBuffer.wrap(upd);
+      bb.put(dat, 0, safeLen);
+      for(int i = 0; i < elemIds.length; i++) {
+        bb.putInt(elemIds[i]);
+      }
     }
     
     // Update store

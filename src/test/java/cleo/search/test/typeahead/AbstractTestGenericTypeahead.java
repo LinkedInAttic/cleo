@@ -97,6 +97,7 @@ public abstract class AbstractTestGenericTypeahead<E extends Element> extends Te
           elementStoreDir,
           getElementStoreIndexStart(),
           getElementStoreCapacity(),
+          new MemorySegmentFactory(),
           elementStoreSegMB,
           createElementSerializer());
     return elementStore;

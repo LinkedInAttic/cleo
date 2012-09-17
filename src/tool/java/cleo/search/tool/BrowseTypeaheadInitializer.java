@@ -52,6 +52,7 @@ public class BrowseTypeaheadInitializer<E extends Element> implements TypeaheadI
           config.getElementStoreDir(),
           config.getElementStoreIndexStart(),
           config.getElementStoreCapacity(),
+          config.getElementStoreSegmentFactory(),
           config.getElementStoreSegmentMB(),
           config.getElementSerializer());
     

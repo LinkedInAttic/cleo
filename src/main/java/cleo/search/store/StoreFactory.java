@@ -38,8 +38,8 @@ public class StoreFactory {
                                                       int initialCapacity,
                                                       SegmentFactory segmentFactory,
                                                       int segmentFileSizeMB) throws Exception {
-    int batchSize = 3000;
-    int numSyncBatches = 10;
+    int batchSize = 5000;
+    int numSyncBatches = 20;
     double segmentCompactFactor = 0.67;
     
     return new KratiArrayStore(initialCapacity,
@@ -57,8 +57,8 @@ public class StoreFactory {
                                                     SegmentFactory indexSegmentFactory,
                                                     int storeSegmentFileSizeMB,
                                                     SegmentFactory storeSegmentFactory) throws Exception {
-    int batchSize = 3000;
-    int numSyncBatches = 10;
+    int batchSize = 5000;
+    int numSyncBatches = 20;
     return new KratiDataStore(storeHomeDir,
                               initialCapacity, batchSize, numSyncBatches,
                               indexSegmentFileSizeMB, indexSegmentFactory,
@@ -89,7 +89,8 @@ public class StoreFactory {
    * @throws Exception if the <code>ArrayStoreConnections</code> cannot be created.
    */
   public static ArrayStoreConnections createArrayStoreConnections(File storeHomeDir, int capacity, int segmentFileSizeMB) throws Exception {
-    return new KratiArrayStoreConnections(createKratiArrayStore(storeHomeDir, capacity, new MemorySegmentFactory(), segmentFileSizeMB));
+    KratiArrayStore kas = createKratiArrayStore(storeHomeDir, capacity, new MemorySegmentFactory(), segmentFileSizeMB);
+    return new KratiArrayStoreConnections(new KratiArrayStoreInts(kas));
   }
   
   /**
@@ -103,34 +104,22 @@ public class StoreFactory {
    * @throws Exception if the <code>ArrayStoreConnections</code> cannot be created.
    */
   public static ArrayStoreConnections createArrayStoreConnections(File storeHomeDir, int capacity, SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
-    return new KratiArrayStoreConnections(createKratiArrayStore(storeHomeDir, capacity, segmentFactory, segmentFileSizeMB));
-  }
-  
-  public static ArrayStoreFilters createArrayStoreFilters(File storeHomeDir, int capacity, int segmentFileSizeMB) throws Exception {
-    return new KratiArrayStoreFilters(createKratiArrayStore(storeHomeDir, capacity, new MemorySegmentFactory(), segmentFileSizeMB));
+    KratiArrayStore kas = createKratiArrayStore(storeHomeDir, capacity, segmentFactory, segmentFileSizeMB);
+    return new KratiArrayStoreConnections(new KratiArrayStoreInts(kas));
   }
   
   public static ArrayStoreFilters createArrayStoreFilters(File storeHomeDir, int capacity, SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
     return new KratiArrayStoreFilters(createKratiArrayStore(storeHomeDir, capacity, segmentFactory, segmentFileSizeMB));
   }
   
-  public static ArrayStoreWeights createArrayStoreWeights(File storeHomeDir, int capacity, int segmentFileSizeMB) throws Exception {
-    return new KratiArrayStoreWeights(createKratiArrayStore(storeHomeDir, capacity, new MemorySegmentFactory(), segmentFileSizeMB));
-  }
-  
   public static ArrayStoreWeights createArrayStoreWeights(File storeHomeDir, int capacity, SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
     return new KratiArrayStoreWeights(createKratiArrayStore(storeHomeDir, capacity, segmentFactory, segmentFileSizeMB));
   }
   
-  public static <E extends Element> ArrayStoreElement<E> createElementStorePartition(File storeHomeDir, int idStart, int idCount, int segmentFileSizeMB, ElementSerializer<E> serializer)
-  throws Exception {
-    return createElementStorePartition(storeHomeDir, idStart, idCount, new MemorySegmentFactory(), segmentFileSizeMB, serializer);
-  }
-  
   public static <E extends Element> ArrayStoreElement<E> createElementStorePartition(File storeHomeDir, int idStart, int idCount, SegmentFactory segmentFactory, int segmentFileSizeMB, ElementSerializer<E> serializer)
   throws Exception {
-    int batchSize = 3000;
-    int numSyncBatches = 10;
+    int batchSize = 5000;
+    int numSyncBatches = 20;
     ArrayStorePartition p = new StaticArrayStorePartition(idStart, idCount, batchSize, numSyncBatches, storeHomeDir, segmentFactory, segmentFileSizeMB, false);
     return new KratiArrayStoreElement<E>(p, serializer);
   }
@@ -140,13 +129,13 @@ public class StoreFactory {
       int initialCapacity,
       int indexSegmentFileSizeMB, SegmentFactory indexSegmentFactory,
       int storeSegmentFileSizeMB, SegmentFactory storeSegmentFactory) throws Exception {
-    int batchSize = 3000;
-    int numSyncBatches = 10;
+    int batchSize = 5000;
+    int numSyncBatches = 20;
     KratiDataStore kds = new KratiDataStore(storeHomeDir,
                                             initialCapacity, batchSize, numSyncBatches,
                                             indexSegmentFileSizeMB, indexSegmentFactory,
                                             storeSegmentFileSizeMB, storeSegmentFactory);
-    return new KratiDataStoreConnections(kds);
+    return new KratiDataStoreConnections(new KratiBufferedInts(kds));
   }
   
   public static ConnectionsStore<String> createConnectionsStore(
@@ -159,6 +148,6 @@ public class StoreFactory {
                                             initialCapacity, batchSize, numSyncBatches,
                                             indexSegmentFileSizeMB, indexSegmentFactory,
                                             storeSegmentFileSizeMB, storeSegmentFactory);
-    return new KratiDataStoreConnections(kds);
+    return new KratiDataStoreConnections(new KratiBufferedInts(kds));
   }
 }

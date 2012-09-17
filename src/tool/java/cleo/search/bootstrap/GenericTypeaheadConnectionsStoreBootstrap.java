@@ -69,9 +69,10 @@ public class GenericTypeaheadConnectionsStoreBootstrap {
     Chronos c = new Chronos();
     
     // Load elementStore
+    SegmentFactory elementStoreSegFactory = new MemorySegmentFactory();
     ElementSerializer<TypeaheadElement> elementSerializer = new TypeaheadElementSerializer();
     ArrayStoreElement<TypeaheadElement> elementStore =
-      StoreFactory.createElementStorePartition(elementStoreDir, idStart, idCount, elementStoreSegMB, elementSerializer);
+      StoreFactory.createElementStorePartition(elementStoreDir, idStart, idCount, elementStoreSegFactory, elementStoreSegMB, elementSerializer);
     
     // Load elementStore into memory
     elementStore = new MemoryArrayStoreElement<TypeaheadElement>(elementStore);

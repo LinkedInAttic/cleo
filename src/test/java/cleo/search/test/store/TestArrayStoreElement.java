@@ -28,6 +28,7 @@ import cleo.search.store.ArrayStoreElement;
 import cleo.search.store.StoreFactory;
 import cleo.search.test.util.FileUtils;
 import junit.framework.TestCase;
+import krati.core.segment.MemorySegmentFactory;
 import krati.core.segment.Segment;
 
 /**
@@ -57,7 +58,7 @@ public class TestArrayStoreElement extends TestCase {
     int segmentFileSizeMB = Segment.minSegmentFileSizeMB;
     ElementSerializer<SimpleElement> serializer = createSerializer();
     
-    return StoreFactory.createElementStorePartition(storeHomeDir, idStart, idCount, segmentFileSizeMB, serializer);
+    return StoreFactory.createElementStorePartition(storeHomeDir, idStart, idCount, new MemorySegmentFactory(), segmentFileSizeMB, serializer);
   }
   
   protected ArrayStoreElement<SimpleElement> createElementStore(int idStart, int idCount) throws Exception {
@@ -65,7 +66,7 @@ public class TestArrayStoreElement extends TestCase {
     int segmentFileSizeMB = Segment.minSegmentFileSizeMB;
     ElementSerializer<SimpleElement> serializer = createSerializer();
     
-    return StoreFactory.createElementStorePartition(storeHomeDir, idStart, idCount, segmentFileSizeMB, serializer);
+    return StoreFactory.createElementStorePartition(storeHomeDir, idStart, idCount, new MemorySegmentFactory(), segmentFileSizeMB, serializer);
   }
   
   @Override

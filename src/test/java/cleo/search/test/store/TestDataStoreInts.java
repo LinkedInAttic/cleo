@@ -41,10 +41,6 @@ public class TestDataStoreInts extends TestCase {
   protected Random rand = new Random();
   protected DataStoreInts store;
   
-  public TestDataStoreInts(String name) {
-    super(name);
-  }
-  
   @Override
   protected void setUp() {
     int initialCapacity = 500000;

@@ -18,6 +18,9 @@ package cleo.search.typeahead;
 
 import java.io.File;
 
+import krati.core.segment.MemorySegmentFactory;
+import krati.core.segment.SegmentFactory;
+
 import cleo.search.Element;
 import cleo.search.ElementSerializer;
 import cleo.search.selector.PrefixSelectorFactory;
@@ -37,6 +40,7 @@ public class BrowseTypeaheadConfig<E extends Element> {
   private int elementStoreIndexStart;
   private int elementStoreCapacity;
   private int elementStoreSegmentMB;
+  private SegmentFactory elementStoreSegmentFactory = new MemorySegmentFactory();
   
   // BloomFilter prefixLength
   private int filterPrefixLength = 2;
@@ -85,6 +89,14 @@ public class BrowseTypeaheadConfig<E extends Element> {
   
   public int getElementStoreSegmentMB() {
     return elementStoreSegmentMB;
+  }
+  
+  public SegmentFactory getElementStoreSegmentFactory() {
+    return elementStoreSegmentFactory;
+  }
+  
+  public void setElementStoreSegmentFactory(SegmentFactory elementStoreSegmentFactory) {
+    this.elementStoreSegmentFactory = elementStoreSegmentFactory;
   }
   
   public void setFilterPrefixLength(int filterPrefixLength) {
