@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.log4j.Logger;
+
+import krati.PersistableListener;
 import krati.core.segment.MemorySegmentFactory;
 import krati.core.segment.SegmentFactory;
 import krati.io.Serializer;
@@ -32,6 +35,11 @@ import krati.io.Serializer;
  * @since 09/12, 2012
  */
 public class KratiBufferedInts implements DataStoreInts {
+  /**
+   * The logger.
+   */
+  private static final Logger logger = Logger.getLogger(KratiBufferedInts.class);
+  
   /**
    * The number of integers in buffer.
    */
@@ -105,6 +113,9 @@ public class KratiBufferedInts implements DataStoreInts {
     this.extension = initExtension(new MemorySegmentFactory());
     this.extInts = new KratiArrayStoreInts(extension);
     
+    // Initialize buffer persist listener
+    initPersistableListener();
+    
     // Initialize reentrant locks
     lockArray = new ReentrantLock[32];
     for(int i = 0; i < lockArray.length; i++) {
@@ -115,29 +126,56 @@ public class KratiBufferedInts implements DataStoreInts {
   }
   
   /**
+   * Initializes the buffer persist listener.
+   */
+  protected void initPersistableListener() {
+    final PersistableListener originalListener = buffer.getUnderlyingStore().getPersistableListener();
+    buffer.getUnderlyingStore().setPersistableListener(new PersistableListener() {
+      final PersistableListener origin = originalListener; 
+      @Override
+      public void beforePersist() {
+        try {
+          extension.persist();
+          if(origin != null) {
+            origin.beforePersist();
+          }
+        } catch(Exception e) {
+          logger.error("failed on calling beforePersist", e);
+        }
+      }
+      
+      @Override
+      public void afterPersist() {
+        if(origin != null) {
+          origin.afterPersist();
+        }
+      }
+    });
+  }
+  
+  /**
    * Initializes the extension store.
    * 
    * @throws Exception
    */
   protected KratiArrayStore initExtension(SegmentFactory segmentFactory) throws Exception {
-    File dbHome = new File(buffer.getStoreHome(), "store-ext");
-    
+    final File extHomeDir = new File(buffer.getStoreHome(), "store-ext");
     final int initialCapacity = buffer.getUnderlyingStore().capacity();
-    final int batchSize = buffer.getUpdateBatchSize();
+    final int batchSize = 1000;
     final int numSyncBatches = 100;
     int segmentFileSizeMB = 128;
     double segmentCompactFactor = 0.5;
     
-    KratiArrayStore mainStore = new KratiArrayStore(
+    KratiArrayStore extStore = new KratiArrayStore(
         initialCapacity,
         batchSize,
         numSyncBatches,
-        dbHome,
+        extHomeDir,
         segmentFactory,
         segmentFileSizeMB,
         segmentCompactFactor);
     
-    return mainStore;
+    return extStore;
   }
   
   protected int getExtensionIndex(String key) {

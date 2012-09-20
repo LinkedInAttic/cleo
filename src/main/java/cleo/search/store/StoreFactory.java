@@ -129,7 +129,7 @@ public class StoreFactory {
       int initialCapacity,
       int indexSegmentFileSizeMB, SegmentFactory indexSegmentFactory,
       int storeSegmentFileSizeMB, SegmentFactory storeSegmentFactory) throws Exception {
-    int batchSize = 5000;
+    int batchSize = 10000;
     int numSyncBatches = 20;
     KratiDataStore kds = new KratiDataStore(storeHomeDir,
                                             initialCapacity, batchSize, numSyncBatches,

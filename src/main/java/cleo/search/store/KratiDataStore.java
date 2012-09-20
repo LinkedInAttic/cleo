@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 
 import krati.Persistable;
+import krati.PersistableListener;
 import krati.core.segment.SegmentFactory;
 import krati.store.IndexedDataStore;
 
@@ -45,8 +46,7 @@ public class KratiDataStore implements Persistable {
   private final File storeHomeDir;
   private final int updateBatchSize;
   private volatile long lwMark = 0; 
-  private volatile long hwMark = 0; 
-  private volatile long counter= 0;
+  private volatile long hwMark = 0;
   
   public KratiDataStore(File storeDir,
                         int initialCapacity,
@@ -84,6 +84,7 @@ public class KratiDataStore implements Persistable {
     this.waterMarksFile = new File(storeDir, "waterMarks");
     this.waterMarksFileOriginal = new File(storeDir, "waterMarks.original");
     this.initWaterMarks();
+    this.initPersistableListener();
   }
   
   protected int getInitLevel(int initialCapacity) {
@@ -169,13 +170,15 @@ public class KratiDataStore implements Persistable {
     }
   }
   
-  protected void internalPersist(long scn) throws Exception {
-    counter++;
-    hwMark = Math.max(hwMark, scn);
-    if(counter % updateBatchSize == 0) {
-      indexedStore.persist();
-      syncWaterMarks();
-    }
+  protected void initPersistableListener() {
+    indexedStore.setPersistableListener(new PersistableListener() {
+      @Override
+      public void beforePersist() {}
+      
+      @Override
+      public void afterPersist() {
+        syncWaterMarks();
+      }});
   }
   
   public String getStatus() {
@@ -208,13 +211,13 @@ public class KratiDataStore implements Persistable {
   
   public synchronized boolean put(byte[] key, byte[] value, long scn) throws Exception {
     boolean b = indexedStore.put(key, value);
-    internalPersist(scn);
+    hwMark = Math.max(hwMark, scn);
     return b;
   }
   
   public synchronized boolean delete(byte[] key, long scn) throws Exception {
     boolean b = indexedStore.delete(key);
-    internalPersist(scn);
+    hwMark = Math.max(hwMark, scn);
     return b;
   }
   
