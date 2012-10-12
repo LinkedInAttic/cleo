@@ -97,6 +97,8 @@ public class TypeaheadElementStoreBootstrap extends ArrayStoreElementBootstrap<T
         }
       }
     }
+    
+    r.close();
   }
   
   public void loadLine1(File dataDir) throws IOException {

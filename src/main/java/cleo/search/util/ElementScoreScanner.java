@@ -84,6 +84,8 @@ public class ElementScoreScanner implements ScoreScanner {
         }
       }
     }
+    
+    r.close();
   }
   
   public static void main(String[] args) {

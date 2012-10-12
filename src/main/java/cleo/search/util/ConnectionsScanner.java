@@ -88,6 +88,8 @@ public class ConnectionsScanner {
         }
       }
     }
+    
+    r.close();
   }
   
   /**
