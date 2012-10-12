@@ -148,7 +148,7 @@
     <dependency>
       <groupId>com.sna-projects.krati</groupId>
       <artifactId>krati</artifactId>
-      <version>0.4.7.2</version>
+      <version>0.4.8</version>
       <scope>compile</scope>
     </dependency>
 
