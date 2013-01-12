@@ -16,7 +16,9 @@
 
 package cleo.search.store;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 import krati.Persistable;
@@ -27,7 +29,7 @@ import krati.Persistable;
  * @author jwu
  * @since 01/29, 2011
  */
-public interface DataStoreInts extends Persistable {
+public interface DataStoreInts extends Persistable, Closeable {
 
   public String getStatus();
   
@@ -44,4 +46,6 @@ public interface DataStoreInts extends Persistable {
   public void remove(String key, int elemId, long scn) throws Exception;
   
   public Iterator<String> keyIterator();
+
+  public void close() throws IOException;
 }

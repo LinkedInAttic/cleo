@@ -81,6 +81,7 @@ public class TestArrayStoreElement extends TestCase {
   @Override
   protected void tearDown() {
     try {
+      elementStore.close();
       elementStore = null;
       FileUtils.deleteDirectory(getStoreHomeDir());
     } catch (IOException e) {

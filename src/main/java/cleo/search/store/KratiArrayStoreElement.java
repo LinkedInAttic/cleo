@@ -24,6 +24,7 @@ import cleo.search.ElementSerializer;
 import krati.array.Array;
 import krati.store.ArrayStore;
 import krati.store.ArrayStorePartition;
+import java.lang.UnsupportedOperationException;
 
 /**
  * KratiArrayStoreElement
@@ -39,6 +40,7 @@ public final class KratiArrayStoreElement<E extends Element> implements ArraySto
   private final int indexEnd;
   private final ArrayStore baseStore;
   private final ElementSerializer<E> elementSerializer;
+  private boolean isClosed=false;
   
   public KratiArrayStoreElement(ArrayStore baseStore, ElementSerializer<E> elementSerializer) {
     this.baseStore = baseStore;
@@ -46,6 +48,11 @@ public final class KratiArrayStoreElement<E extends Element> implements ArraySto
     this.indexStart = (baseStore instanceof ArrayStorePartition) ?
                       ((ArrayStorePartition)baseStore).getIdStart() : 0;
     this.indexEnd = getIndexStart() + baseStore.capacity();
+  }
+
+  protected void ensureOpen() throws UnsupportedOperationException {
+    if(isClosed)
+      throw new UnsupportedOperationException("Cannot modify store, already closed!");
   }
   
   public ArrayStore getBaseStore() {
@@ -65,6 +72,7 @@ public final class KratiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public synchronized void setElement(int index, E element, long scn) throws Exception {
+    ensureOpen();
     byte[] dat = null;
     if(element != null) {
       dat = elementSerializer.serialize(element);
@@ -74,6 +82,7 @@ public final class KratiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public synchronized void deleteElement(int index, long scn) throws Exception {
+    ensureOpen();
     baseStore.delete(index, scn);
   }
   
@@ -89,21 +98,25 @@ public final class KratiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public synchronized void saveHWMark(long endOfPeriod) throws Exception {
+    ensureOpen();
     baseStore.saveHWMark(endOfPeriod);
   }
   
   @Override
   public synchronized void persist() throws IOException {
+    ensureOpen();
     baseStore.persist();
   }
   
   @Override
   public synchronized void sync() throws IOException {
+    ensureOpen();
     baseStore.sync();
   }
   
   @Override
   public synchronized void clear() {
+    ensureOpen();
     baseStore.clear();
   }
   
@@ -134,11 +147,22 @@ public final class KratiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public synchronized void setElementBytes(int index, byte[] elementBytes, long scn)  throws Exception {
+    ensureOpen();
     baseStore.set(index, elementBytes, scn);
   }
 
   @Override
   public Array.Type getType() {
     return baseStore.getType();
+  }
+
+  @Override
+  public void close() throws IOException {
+    try {
+      baseStore.close();
+    }
+    finally {
+      isClosed=true;
+    }
   }
 }

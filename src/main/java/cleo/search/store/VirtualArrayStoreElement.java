@@ -38,6 +38,7 @@ public class VirtualArrayStoreElement<E extends Element> implements ArrayStoreEl
   protected final SourceWaterMarks sourceWaterMarks;
   protected volatile long hwMark;
   protected volatile long lwMark;
+  protected boolean isClosed = false;
   
   /**
    * Creates a new instance of VirtualArrayStoreElement for a user specified source.
@@ -57,7 +58,12 @@ public class VirtualArrayStoreElement<E extends Element> implements ArrayStoreEl
     this.lwMark = waterMarks.getLWMScn(source);
     this.hwMark = waterMarks.getHWMScn(source);
   }
-  
+
+  protected void ensureOpen() throws UnsupportedOperationException {
+    if(isClosed)
+      throw new UnsupportedOperationException("Cannot modify store, already closed!");
+  }
+
   /**
    * @return the source where new updates originate.
    */
@@ -113,6 +119,7 @@ public class VirtualArrayStoreElement<E extends Element> implements ArrayStoreEl
   
   @Override
   public synchronized void deleteElement(int index, long sourceScn) throws Exception {
+    ensureOpen();
     long internalScn = scnFactory.next();
     elementStore.deleteElement(index, internalScn);
     
@@ -124,6 +131,7 @@ public class VirtualArrayStoreElement<E extends Element> implements ArrayStoreEl
   
   @Override
   public synchronized void setElement(int index, E element, long sourceScn) throws Exception {
+    ensureOpen();
     long internalScn = scnFactory.next();
     elementStore.setElement(index, element, internalScn);
     
@@ -150,18 +158,21 @@ public class VirtualArrayStoreElement<E extends Element> implements ArrayStoreEl
   
   @Override
   public synchronized void persist() throws IOException {
+    ensureOpen();
     elementStore.persist();
     syncWaterMarksInternal();
   }
   
   @Override
   public synchronized void sync() throws IOException {
+    ensureOpen();
     elementStore.sync();
     syncWaterMarksInternal();
   }
   
   @Override
   public synchronized void clear() {
+    ensureOpen();
     elementStore.clear();
     lwMark = hwMark = 0;
     synchronized(sourceWaterMarks) {
@@ -184,6 +195,7 @@ public class VirtualArrayStoreElement<E extends Element> implements ArrayStoreEl
   
   @Override
   public synchronized void setElementBytes(int index, byte[] elementBytes, long scn) throws Exception {
+    ensureOpen();
     elementStore.setElementBytes(index, elementBytes, scn);
   }
   
@@ -195,5 +207,15 @@ public class VirtualArrayStoreElement<E extends Element> implements ArrayStoreEl
   @Override
   public Array.Type getType() {
     return elementStore.getType();
+  }
+
+  @Override
+  public void close() throws IOException {
+    try {
+      elementStore.close();
+    }
+    finally {
+      isClosed=true;
+    }
   }
 }
