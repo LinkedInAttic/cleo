@@ -121,4 +121,8 @@ public class MemoryConnectionsStore<S> implements ConnectionsStore<S> {
   public Iterator<S> sourceIterator() {
     return map.keySet().iterator();
   }
+
+  public void close() throws IOException {
+    pcs.close();
+  }
 }

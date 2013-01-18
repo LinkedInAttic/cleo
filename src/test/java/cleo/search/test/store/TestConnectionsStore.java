@@ -70,6 +70,7 @@ public class TestConnectionsStore extends TestCase {
   protected void tearDown() {
     if(storeHome != null) {
       try {
+        store.close();
         FileUtils.deleteDirectory(storeHome);
       } catch (IOException e) {
         e.printStackTrace();

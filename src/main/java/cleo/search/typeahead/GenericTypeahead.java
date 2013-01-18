@@ -134,7 +134,7 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
     
     logger.info(name + " started.");
   }
-  
+
   protected FloatArrayPartition initScoreStore() {
     FloatArrayPartition p = new StaticFloatArrayPartition(elementStore.getIndexStart(), elementStore.capacity());
     
@@ -352,6 +352,7 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
   
   @Override
   public boolean index(E element) throws Exception {
+    ensureOpen();
     writeLock.lock();
     
     try {
@@ -401,6 +402,7 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
   
   @Override
   public void sync() throws IOException {
+    ensureOpen();
     writeLock.lock();
     
     try {
@@ -413,6 +415,7 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
   
   @Override
   public void persist() throws IOException {
+    ensureOpen();
     writeLock.lock();
     
     try {
@@ -502,6 +505,7 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
   
   @Override
   public void saveHWMark(long endOfPeriod) throws Exception {
+    ensureOpen();
     writeLock.lock();
     
     try {
@@ -519,5 +523,16 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
   @Override
   public long getLWMark() {
     return connectionsStore.getLWMark();
+  }
+
+  @Override
+  public void close() throws IOException {
+    isClosed=true;
+    try {
+      super.close();
+    }
+    finally {
+      connectionsStore.close();
+    }
   }
 }

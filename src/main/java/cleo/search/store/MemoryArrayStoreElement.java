@@ -40,6 +40,7 @@ public class MemoryArrayStoreElement<E extends Element> implements ArrayStoreEle
   private final ArrayList<E> elementList;
   private final ArrayStoreElement<E> elementStore;
   private final int loadParallelism;
+  private boolean isClosed=false;
   
   private final static Logger logger = Logger.getLogger(MemoryArrayStoreElement.class);
   
@@ -55,8 +56,15 @@ public class MemoryArrayStoreElement<E extends Element> implements ArrayStoreEle
     
     this.init();
   }
-  
+
+  protected void ensureOpen() throws UnsupportedOperationException {
+    if(isClosed)
+      throw new UnsupportedOperationException("Cannot modify store, already closed!");
+  }
+
+
   protected void init() {
+    ensureOpen();
     final int cnt = elementStore.capacity();
     boolean succ = true;
     
@@ -153,12 +161,14 @@ public class MemoryArrayStoreElement<E extends Element> implements ArrayStoreEle
   
   @Override
   public synchronized void setElement(int index, E element, long scn) throws Exception {
+    ensureOpen();
     elementStore.setElement(index, element, scn);
     setElementInternal(index, element);
   }
   
   @Override
   public synchronized void deleteElement(int index, long scn) throws Exception {
+    ensureOpen();
     elementStore.deleteElement(index, scn);
     elementList.set(index - indexStart, null);
   }
@@ -175,21 +185,25 @@ public class MemoryArrayStoreElement<E extends Element> implements ArrayStoreEle
   
   @Override
   public synchronized void saveHWMark(long endOfPeriod) throws Exception {
+    ensureOpen();
     elementStore.saveHWMark(endOfPeriod);
   }
   
   @Override
   public synchronized void persist() throws IOException {
+    ensureOpen();
     elementStore.persist();
   }
   
   @Override
   public synchronized void sync() throws IOException {
+    ensureOpen();
     elementStore.sync();
   }
   
   @Override
   public synchronized void clear() {
+    ensureOpen();
     elementStore.clear();
     elementList.clear();
   }
@@ -221,6 +235,7 @@ public class MemoryArrayStoreElement<E extends Element> implements ArrayStoreEle
   
   @Override
   public synchronized void setElementBytes(int index, byte[] elementBytes, long scn) throws Exception {
+    ensureOpen();
     E element = null;
     if(elementBytes != null) {
       element = getElementSerializer().deserialize(elementBytes);
@@ -238,5 +253,15 @@ public class MemoryArrayStoreElement<E extends Element> implements ArrayStoreEle
   @Override
   public Array.Type getType() {
     return elementStore.getType();
+  }
+
+  @Override
+  public void close() throws IOException {
+    try {
+      elementStore.close();
+    }
+    finally {
+      isClosed=true;
+    }
   }
 }

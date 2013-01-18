@@ -16,11 +16,7 @@
 
 package cleo.search.store;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
@@ -38,7 +34,7 @@ import krati.store.IndexedDataStore;
  * @author jwu
  * @since 02/01, 2011
  */
-public class KratiDataStore implements Persistable {
+public class KratiDataStore implements Persistable, Closeable {
   private final static Logger logger = Logger.getLogger(KratiDataStore.class);
   private final IndexedDataStore indexedStore;
   private final File waterMarksFileOriginal;
@@ -47,7 +43,7 @@ public class KratiDataStore implements Persistable {
   private final int updateBatchSize;
   private volatile long lwMark = 0; 
   private volatile long hwMark = 0;
-  
+
   public KratiDataStore(File storeDir,
                         int initialCapacity,
                         int batchSize, int numSyncBatches,
@@ -254,5 +250,12 @@ public class KratiDataStore implements Persistable {
   
   public Iterator<byte[]> keyIterator() {
     return indexedStore.keyIterator();
+  }
+
+  public void close() throws IOException {
+    if(indexedStore.isOpen())
+    {
+      indexedStore.close();
+    }
   }
 }
