@@ -16,6 +16,8 @@
 
 package cleo.search.store;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Iterator;
 
 import krati.Persistable;
@@ -26,7 +28,7 @@ import krati.Persistable;
  * @author jwu
  * @since 02/05, 2011
  */
-public interface ConnectionsStore<S> extends Persistable {
+public interface ConnectionsStore<S> extends Persistable, Closeable {
 
   /**
    * Get the connections
@@ -73,4 +75,10 @@ public interface ConnectionsStore<S> extends Persistable {
    * @return the connection source iterator.
    */
   public Iterator<S> sourceIterator();
+
+  /**
+   * closes the store
+   * @throws IOException
+   */
+  public void close() throws IOException;
 }

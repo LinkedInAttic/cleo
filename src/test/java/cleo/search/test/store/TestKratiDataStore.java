@@ -72,6 +72,7 @@ public class TestKratiDataStore extends TestCase {
   protected void tearDown() {
     if(store != null) {
       try {
+        store.close();
         FileUtils.deleteDirectory(store.getStoreHome());
       } catch (IOException e) {
         e.printStackTrace();

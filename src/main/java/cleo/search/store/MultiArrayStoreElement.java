@@ -36,6 +36,7 @@ import cleo.search.ElementSerializer;
 public final class MultiArrayStoreElement<E extends Element> implements ArrayStoreElement<E> {
   private final static Logger logger = Logger.getLogger(MultiArrayStoreElement.class);
   private final List<ArrayStoreElement<E>> storeList;
+  private boolean isClosed=false;
   
   /**
    * Creates a new instance of MultiArrayStoreElement.
@@ -55,7 +56,12 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
       }
     });
   }
-  
+
+  protected void ensureOpen() throws UnsupportedOperationException {
+    if(isClosed)
+      throw new UnsupportedOperationException("Cannot modify store, already closed!");
+  }
+
   @Override
   public Type getType() {
     return (storeList.size() > 0) ? storeList.get(0).getType() : null;
@@ -136,6 +142,7 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public void setElement(int index, E element, long scn) throws Exception {
+    ensureOpen();
     for(ArrayStoreElement<E> store : storeList) {
       if(store.hasIndex(index)) {
         store.setElement(index, element, scn);
@@ -146,6 +153,7 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public void setElementBytes(int index, byte[] elementBytes, long scn) throws Exception {
+    ensureOpen();
     for(ArrayStoreElement<E> store : storeList) {
       if(store.hasIndex(index)) {
         store.setElementBytes(index, elementBytes, scn);
@@ -156,6 +164,7 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public void deleteElement(int index, long scn) throws Exception {
+    ensureOpen();
     for(ArrayStoreElement<E> store : storeList) {
       if(store.hasIndex(index)) {
         store.deleteElement(index, scn);
@@ -197,6 +206,7 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
    */
   @Override
   public synchronized void saveHWMark(long endOfPeriod) {
+    ensureOpen();
     for(ArrayStoreElement<E> store : storeList) {
       try {
         store.saveHWMark(endOfPeriod);
@@ -210,6 +220,7 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public synchronized void persist() throws IOException {
+    ensureOpen();
     saveHWMark(getHWMark());
     
     // Persist each store sequentially
@@ -220,6 +231,7 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public synchronized void sync() throws IOException {
+    ensureOpen();
     saveHWMark(getHWMark());
     
     // Sync each store sequentially
@@ -230,11 +242,24 @@ public final class MultiArrayStoreElement<E extends Element> implements ArraySto
   
   @Override
   public synchronized void clear() {
+    ensureOpen();
     saveHWMark(getHWMark());
     
     // Clear each store sequentially
     for(ArrayStoreElement<E> store : storeList) {
       store.clear();
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    try {
+      for(ArrayStoreElement<E> elementStore : storeList) {
+        elementStore.close();
+      }
+    }
+    finally {
+      isClosed=true;
     }
   }
 }

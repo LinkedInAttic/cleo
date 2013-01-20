@@ -21,6 +21,9 @@ import cleo.search.ElementSerializer;
 import krati.Persistable;
 import krati.array.Array;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * ArrayStoreElement
  * 
@@ -30,7 +33,7 @@ import krati.array.Array;
  * <p>
  * 05/27, 2011 - Added methods getElmentBytes/setElementBytes <br/>
  */
-public interface ArrayStoreElement<E extends Element> extends Persistable, Array {
+public interface ArrayStoreElement<E extends Element> extends Persistable, Array, Closeable {
   
   /**
    * @return the capacity of this ArrayStoreElement.
@@ -95,5 +98,11 @@ public interface ArrayStoreElement<E extends Element> extends Persistable, Array
    * @return the element serializer.
    */
   public ElementSerializer<E> getElementSerializer();
+
+  /**
+   * closes the store
+   * @throws IOException
+   */
+  public void close() throws IOException;
   
 }

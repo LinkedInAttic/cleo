@@ -367,4 +367,9 @@ public class KratiBufferedInts implements DataStoreInts {
   public Iterator<String> keyIterator() {
     return bufInts.keyIterator();
   }
+
+  public void close() throws IOException {
+    this.buffer.close();
+    this.extension.close();
+  }
 }

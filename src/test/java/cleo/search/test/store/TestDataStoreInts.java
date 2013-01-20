@@ -70,6 +70,7 @@ public class TestDataStoreInts extends TestCase {
   protected void tearDown() {
     if(store != null) {
       try {
+        store.close();
         FileUtils.deleteDirectory(store.getStoreHome());
       } catch (IOException e) {
         e.printStackTrace();

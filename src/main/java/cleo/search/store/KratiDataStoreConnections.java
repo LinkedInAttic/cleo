@@ -94,4 +94,8 @@ public final class KratiDataStoreConnections implements ConnectionsStore<String>
   public void saveHWMark(long endOfPeriod) throws Exception {
     storeInts.saveHWMark(endOfPeriod);
   }
+
+  public void close() throws IOException {
+    storeInts.close();
+  }
 }
