@@ -16,6 +16,8 @@
 
 package cleo.search.typeahead;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,11 +36,12 @@ import cleo.search.store.ArrayStoreElement;
  * @author jwu
  * @since 03/02, 2011
  */
-public abstract class AbstractTypeahead<E extends Element> implements Typeahead<E> {
+public abstract class AbstractTypeahead<E extends Element> implements Typeahead<E>, Closeable {
   protected final String name;
   protected final BloomFilter<Long> bloomFilter;
   protected final ArrayStoreElement<E> elementStore;
   protected final SelectorFactory<E> selectorFactory;
+  protected boolean isClosed=false;
   
   protected AbstractTypeahead(String name,
                               ArrayStoreElement<E> elementStore,
@@ -49,7 +52,12 @@ public abstract class AbstractTypeahead<E extends Element> implements Typeahead<
     this.elementStore = elementStore;
     this.selectorFactory = selectorFactory;
   }
-  
+
+  protected void ensureOpen() throws UnsupportedOperationException {
+    if(isClosed)
+      throw new UnsupportedOperationException("Cannot modify store, already closed!");
+  }
+
   @Override
   public final String getName() {
     return name;
@@ -122,5 +130,14 @@ public abstract class AbstractTypeahead<E extends Element> implements Typeahead<
     sb.append('}');
     
     logger.info(sb.toString());
+  }
+
+  public void close() throws IOException {
+    try {
+      this.elementStore.close();
+    }
+    finally {
+      isClosed=true;
+    }
   }
 }

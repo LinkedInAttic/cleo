@@ -245,4 +245,8 @@ public class KratiDataStoreInts implements DataStoreInts {
   public final Serializer<String> getKeySerializer() {
     return serializer;
   }
+
+  public void close() throws IOException {
+    store.close();
+  }
 }
