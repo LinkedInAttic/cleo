@@ -152,7 +152,7 @@ public class GenericTypeahead<E extends Element> extends AbstractTypeahead<E> im
             p.set(i, score);
           }
           
-          if(elementStore.hasIndex(i)) {
+          if(score > Score.MIN_SCORE_FLOAT && elementStore.hasIndex(i)) {
             E element = elementStore.getElement(i);
             if(element != null) {
               element.setScore(score);
