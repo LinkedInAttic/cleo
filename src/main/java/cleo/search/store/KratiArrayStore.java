@@ -20,17 +20,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
-import org.apache.log4j.Logger;
-
 import krati.array.Array;
 import krati.array.DataArray;
 import krati.array.DynamicArray;
+import krati.core.array.AddressArray;
+import krati.core.array.AddressArrayFactory;
 import krati.core.array.SimpleDataArray;
-import krati.core.array.basic.DynamicLongArray;
 import krati.core.segment.AddressFormat;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
 import krati.store.ArrayStore;
+
+import org.apache.log4j.Logger;
 
 /**
  * KratiArrayStore - a dynamic krati array store
@@ -49,7 +50,7 @@ public class KratiArrayStore implements DataArray, DynamicArray, ArrayStore {
   protected final String homePath;
   protected final int updateBatchSize;
   protected final SimpleDataArray dataArray;
-  protected final DynamicLongArray addrArray;
+  protected final AddressArray addrArray;
   
   /**
    * Constructs a Krati array store with the following default values.
@@ -99,11 +100,37 @@ public class KratiArrayStore implements DataArray, DynamicArray, ArrayStore {
                          SegmentFactory segmentFactory,
                          int segmentFileSizeMB,
                          double segmentCompactFactor) throws Exception {
+    this(length, batchSize, numSyncBatches, homeDirectory, segmentFactory, segmentFileSizeMB, segmentCompactFactor, new AddressArrayFactory(true) );
+
+  }
+
+  /**
+   * Constructs a Krati array store.
+   *
+   * @param length               - the array length
+   * @param batchSize            - the number of updates per update batch
+   * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
+   * @param homeDirectory        - the home directory of data array
+   * @param segmentFactory       - the segment factory
+   * @param segmentFileSizeMB    - the segment size in MB
+   * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+   * @param addressArrayFactory  - the AddressArrayFactory to create the AddressArray related to this store.
+   * @throws Exception
+   */
+  public KratiArrayStore(int length,
+                         int batchSize,
+                         int numSyncBatches,
+                         File homeDirectory,
+                         SegmentFactory segmentFactory,
+                         int segmentFileSizeMB,
+                         double segmentCompactFactor,
+                         AddressArrayFactory addressArrayFactory) throws Exception {
     this.homeDir = homeDirectory;
     this.homePath = homeDirectory.getCanonicalPath();
 
     // Create address array
-    addrArray = createAddressArray(length, batchSize, numSyncBatches, homeDirectory);
+    addrArray = addressArrayFactory.createDynamicAddressArray(homeDirectory, batchSize, numSyncBatches);
+    addrArray.expandCapacity(length - 1);
 
     // Create segment manager
     String segmentHome = this.homePath + File.separator + "segs";
@@ -117,23 +144,9 @@ public class KratiArrayStore implements DataArray, DynamicArray, ArrayStore {
     
     // Logging
     logger.info(getStatus());
-  }
 
-  protected DynamicLongArray createAddressArray(int length,
-                                                int batchSize,
-                                                int numSyncBatches,
-                                                File homeDirectory) throws Exception {
-    DynamicLongArray addrArray;
-    addrArray = new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
-    addrArray.expandCapacity(length - 1);
-    
-    if (length != addrArray.length()) {
-      logger.warn("address array: length " + addrArray.length() + " is different from specified " + length);
-    }
-    logger.info("address array: length=" + addrArray.length() + " home=" + homeDirectory.getAbsolutePath());
-    
-    return addrArray;
   }
+  
 
   public File getStoreHome() {
     return homeDir;
