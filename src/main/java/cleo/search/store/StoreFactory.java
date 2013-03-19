@@ -18,13 +18,13 @@ package cleo.search.store;
 
 import java.io.File;
 
-import cleo.search.Element;
-import cleo.search.ElementSerializer;
-
+import krati.core.array.AddressArrayFactory;
 import krati.core.segment.MemorySegmentFactory;
 import krati.core.segment.SegmentFactory;
 import krati.store.ArrayStorePartition;
 import krati.store.StaticArrayStorePartition;
+import cleo.search.Element;
+import cleo.search.ElementSerializer;
 
 /**
  * StoreFactory
@@ -34,13 +34,32 @@ import krati.store.StaticArrayStorePartition;
  */
 public class StoreFactory {
   
+  // parameter for the AddressArrayFactory constructor.
+  // just added for readability.
+  private static final boolean MEMORY_ADDRESS_ARRAY = true;
+  
+  // Not used. Added for readability. 
+  //private static final boolean DISK_ADDRESS_ARRAY = false;
+  
   public static KratiArrayStore createKratiArrayStore(File storeHomeDir,
                                                       int initialCapacity,
                                                       SegmentFactory segmentFactory,
                                                       int segmentFileSizeMB) throws Exception {
+    return createKratiArrayStore( storeHomeDir,
+                                  initialCapacity,
+                                  segmentFactory,
+                                  segmentFileSizeMB,
+                                  0.67d, // default compaction factor.
+                                  new AddressArrayFactory(MEMORY_ADDRESS_ARRAY)); // memory address array.
+  }
+  public static KratiArrayStore createKratiArrayStore(File storeHomeDir,
+                                                      int initialCapacity,
+                                                      SegmentFactory segmentFactory,
+                                                      int segmentFileSizeMB,
+                                                      double segmentCompactFactor,
+                                                      AddressArrayFactory addressArrayFactory) throws Exception { 
     int batchSize = 5000;
     int numSyncBatches = 20;
-    double segmentCompactFactor = 0.67;
     
     return new KratiArrayStore(initialCapacity,
                                batchSize,
@@ -48,7 +67,8 @@ public class StoreFactory {
                                storeHomeDir,
                                segmentFactory,
                                segmentFileSizeMB,
-                               segmentCompactFactor);
+                               segmentCompactFactor,
+                               addressArrayFactory);
   }
   
   public static KratiDataStore createKratiDataStore(File storeHomeDir,
@@ -107,6 +127,17 @@ public class StoreFactory {
     KratiArrayStore kas = createKratiArrayStore(storeHomeDir, capacity, segmentFactory, segmentFileSizeMB);
     return new KratiArrayStoreConnections(new KratiArrayStoreInts(kas));
   }
+  
+  public static ArrayStoreConnections createArrayStoreConnections(File storeHomeDir,
+                                                                  int initialCapacity,
+                                                                  SegmentFactory segmentFactory,
+                                                                  int segmentFileSizeMB,
+                                                                  double segmentCompactFactor,
+                                                                  AddressArrayFactory addressArrayFactory) throws Exception {
+    KratiArrayStore kas = createKratiArrayStore(storeHomeDir, initialCapacity, segmentFactory, segmentFileSizeMB, segmentCompactFactor, addressArrayFactory);
+    return new KratiArrayStoreConnections(new KratiArrayStoreInts(kas));
+  }
+  
   
   public static ArrayStoreFilters createArrayStoreFilters(File storeHomeDir, int capacity, SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
     return new KratiArrayStoreFilters(createKratiArrayStore(storeHomeDir, capacity, segmentFactory, segmentFileSizeMB));
