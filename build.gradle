@@ -1,0 +1,20 @@
+apply plugin: 'li-product'
+
+allprojects {
+  repositories {
+    maven {url 'http://artifactory.corp.linkedin.com:8081/artifactory/ext-libraries/'}
+    maven {url 'http://artifactory.corp.linkedin.com:8081/artifactory/ext-sandbox/'}
+  }
+}
+
+
+subprojects {
+  plugins.withType(JavaPlugin) {
+    sourceCompatibility = 1.6
+    dependencies {
+    }
+
+    test {
+    }
+  }
+}
