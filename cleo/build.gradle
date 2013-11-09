@@ -1,0 +1,14 @@
+apply plugin: 'java'
+
+configurations {
+  sourceGen {
+  }
+}
+
+dependencies {
+  compile externalDependency.krati
+  compile externalDependency.log4j
+
+  testCompile externalDependency.junit
+}
+
