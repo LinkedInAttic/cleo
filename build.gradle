@@ -1,3 +1,5 @@
+apply plugin: 'java'
+
 project.ext.isDefaultEnvironment = !project.hasProperty('overrideBuildEnvironment')
 
 File getEnvironmentScript()
@@ -9,11 +11,9 @@ File getEnvironmentScript()
 
 apply from: environmentScript
 
-project.ext.externalDependency = [
-  'log4j': 'log4j:log4j:1.2.16',
-  'krati': 'com.sna-projects.krati:krati:0.4.9',
-  'junit':'junit:junit:4.7'
-];
-
-subprojects {
+dependencies {
+  compile 'log4j:log4j:1.2.16'
+  compile 'com.sna-projects.krati:krati:0.4.9-1'
+  testCompile 'junit:junit:4.7'
 }
+
